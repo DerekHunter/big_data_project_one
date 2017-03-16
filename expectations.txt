@@ -1,3 +1,4 @@
+
 Big Data Project 1
 Team Expectations
 
@@ -7,7 +8,10 @@ Team Expectations
 
 3. We will communicate often with each other and reallocate responsibilities if any one of us feels like we are doing too much or too little.
 
-4. With our combined computer science and statistical skills we will take over the world!!! Mwah-ha-hah!
+4. Each member is in charge of fullfilling thier assigned task but, if needed, will assists other members with their task.
+
+5. Speak out. Let other team members know when sometihng is confusing or if you need help. Also, be honest and upfront about opinions and ideas. 
+
 
 
 Signatures:
