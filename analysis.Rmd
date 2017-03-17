@@ -1,0 +1,74 @@
+---
+title: "Project_01"
+author: "Group_1"
+date: "March 21, 2017"
+output: pdf_document
+---
+
+
+```{r include = FALSE, echo = FALSE}
+    loadData = function(path){
+      data = read.csv(path)
+      data = data[-1]
+      
+      data$MSSubClass = as.factor(data$MSSubClass);#Factor encoded as a numeric value
+      
+      #Median or 0
+      data$LotFrontage[is.na(data$LotFrontage) == TRUE] = median(data$LotFrontage[!is.na(data$LotFrontage)])
+      #data$LotFrontage[is.na(data$LotFrontage) == TRUE] = median(data$LotFrontage[!is.na(data$LotFrontage)])
+      
+      data$Alley = factor(data$Alley, levels=c(NA, "None", "Grvl", "Pave"))
+      data$Alley[is.na(data$Alley)] = "None"
+      
+      data$MasVnrType[is.na(data$MasVnrType) == TRUE] = "None"
+      
+      data$MasVnrArea[is.na(data$MasVnrArea) == TRUE] = "None"
+      
+      data$BsmtQual = factor(data$BsmtQual, levels=c("None", levels(data$BsmtQual)))
+      data$BsmtQual[is.na(data$BsmtQual)] = "None"
+      
+      data$BsmtCond = factor(data$BsmtCond, levels=c("None", levels(data$BsmtCond)))
+      data$BsmtCond[is.na(data$BsmtCond)] = "None"
+      
+      data$BsmtExposure = factor(data$BsmtExposure, levels=c("None", levels(data$BsmtExposure)))
+      data$BsmtExposure[is.na(data$BsmtExposure)] = "None"
+      
+      data$BsmtFinType1 = factor(data$BsmtFinType1, levels=c("None", levels(data$BsmtFinType1)))
+      data$BsmtFinType1[is.na(data$BsmtFinType1)] = "None"
+      
+      data$BsmtFinType2 = factor(data$BsmtFinType2, levels=c("None", levels(data$BsmtFinType2)))
+      data$BsmtFinType2[is.na(data$BsmtFinType2)] = "None"
+      
+      data$Electrical[is.na(data$Electrical) == TRUE] = "SBrkr"
+      
+      data$FireplaceQu = factor(data$FireplaceQu, levels=c("None", levels(data$FireplaceQu)))
+      data$FireplaceQu[is.na(data$FireplaceQu)] = "None"
+      
+      data$GarageType = factor(data$GarageType, levels=c("None", levels(data$GarageType)))
+      data$GarageType[is.na(data$GarageType)] = "None"
+      
+      data$GarageYrBlt[is.na(data$GarageYrBlt) == TRUE] = 0
+      
+      data$GarageFinish = factor(data$GarageFinish, levels=c("None", levels(data$GarageFinish)))
+      data$GarageFinish[is.na(data$GarageFinish)] = "None"
+      
+      data$GarageQual = factor(data$GarageQual, levels=c("None", levels(data$GarageQual)))
+      data$GarageQual[is.na(data$GarageQual)] = "None"
+      
+      data$GarageCond = factor(data$GarageCond, levels=c("None", levels(data$GarageCond)))
+      data$GarageCond[is.na(data$GarageCond)] = "None"
+      
+      data$PoolQC = factor(data$PoolQC, levels=c("None", levels(data$PoolQC)))
+      data$PoolQC[is.na(data$PoolQC)] = "None"
+      
+      data$Fence = factor(data$Fence, levels=c("None", levels(data$Fence)))
+      data$Fence[is.na(data$Fence)] = "None"
+      
+      data$MiscFeature = factor(data$MiscFeature, levels=c("None", levels(data$MiscFeature)))
+      data$MiscFeature[is.na(data$MiscFeature)] = "None"
+    
+      return (data)
+    }
+    
+    data = loadData("./train.csv")
+```
