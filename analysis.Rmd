@@ -9,13 +9,13 @@ output: pdf_document
 ```{r include = FALSE, echo = FALSE}
     loadData = function(path){
       data = read.csv(path)
-      data = data[-1]
+      data = subset(data, select = -Id)
       
       data$MSSubClass = as.factor(data$MSSubClass);#Factor encoded as a numeric value
       
       #Median or 0
       data$LotFrontage[is.na(data$LotFrontage) == TRUE] = median(data$LotFrontage[!is.na(data$LotFrontage)])
-      #data$LotFrontage[is.na(data$LotFrontage) == TRUE] = median(data$LotFrontage[!is.na(data$LotFrontage)])
+      #data$LotFrontage[is.na(data$LotFrontage) == TRUE] = 0
       
       data$Alley = factor(data$Alley, levels=c(NA, "None", "Grvl", "Pave"))
       data$Alley[is.na(data$Alley)] = "None"
@@ -70,5 +70,6 @@ output: pdf_document
       return (data)
     }
     
-    data = loadData("./train.csv")
+    train = loadData("./train.csv")
+    test = loadData("./test.csv")
 ```
