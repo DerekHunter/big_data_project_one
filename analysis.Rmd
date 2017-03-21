@@ -14,8 +14,8 @@ output: pdf_document
       tmpData$MSSubClass = as.factor(tmpData$MSSubClass);#Factor encoded as a numeric value
       for(column in colnames(tmpData)){
         if(class(tmpData[[column]]) == "factor"){
-          tmpData[column] = factor(tmpData[column], levels=c("None", levels(tmpData[column])))
-          tmpData[column][is.na(tmpData[column])] = "None"
+          tmpData[column] = factor(tmpData[[column]], levels=c("None", levels(tmpData[[column]])))
+          tmpData[[column]][is.na(tmpData[[column]])] = "None"
         }else{
           tmpData[column][is.na(tmpData[column])] = 0;
         }
