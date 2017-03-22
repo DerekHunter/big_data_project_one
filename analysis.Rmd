@@ -39,6 +39,7 @@ levels(train$MSSubClass) = c("20",  "30",  "40",  "45",  "50",  "60",  "70",  "7
     
 ```
 
+Random Forest
 ```{r}
 rf1 = randomForest(x = train[, 1:79], y = train$SalePrice, importance = TRUE, data = train)
 
