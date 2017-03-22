@@ -1,3 +1,8 @@
+data = loadData("./test.csv")
+
+x<-data[-80]
+y<-data[80]
+
 #summary(x)
 #library(dplyr)
 #X<- as.matrix(select(data, -SalePrice))
