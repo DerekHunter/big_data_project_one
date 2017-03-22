@@ -11,8 +11,9 @@ library(glmnet)
 library(randomForest)
 ```
 
-```{r}
-loadData = function(path){
+```{r include = FALSE, echo = FALSE}
+    loadData = function(path){
+
       tmpData = read.csv(path)
       tmpData = subset(tmpData, select = -Id)
       
@@ -27,6 +28,7 @@ loadData = function(path){
       }
       return (tmpData)
     }
+
 
 train = loadData("./train.csv")
 test = loadData("./test.csv")
