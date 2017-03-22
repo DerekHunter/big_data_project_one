@@ -13,7 +13,6 @@ library(randomForest)
 
 ```{r include = FALSE, echo = FALSE}
     loadData = function(path){
-
       tmpData = read.csv(path)
       tmpData = subset(tmpData, select = -Id)
       
