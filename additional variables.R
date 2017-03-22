@@ -38,5 +38,3 @@ data$HasEnclosedPorch<- data$EnclosedPorch != 0
 data$Has3SsnPorch <- data$X3SsnPorch != 0
 
 
-x<-data[-80]
-y<-data[80]
