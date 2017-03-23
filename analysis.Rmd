@@ -39,12 +39,15 @@ levels(train$MSSubClass) = c("20",  "30",  "40",  "45",  "50",  "60",  "70",  "7
     
 ```
 
-Random Forest
+Uisng the random forest package we were able to select a few predictor variables with the randomForest function and the variable importance plot. 
+
 ```{r}
 rf1 = randomForest(x = train[, 1:79], y = train$SalePrice, importance = TRUE, data = train)
 
 varImpPlot(rf1)
 ```
+
+The predictor variables that showed to have some effect and for which we plan to use for a linear regression model are Overall Quality, Neighbohood, External Quality, above ground square feet, and size of garage in car capacity.
 
 ```{r}
 mse = function(linmod) sum(linmod$residuals^2)/linmod$df.residual
