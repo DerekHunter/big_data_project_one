@@ -47,7 +47,7 @@ rf1 = randomForest(x = train[, 1:79], y = train$SalePrice, importance = TRUE, da
 varImpPlot(rf1)
 ```
 
-The predictor variables that showed to have some effect and for which we plan to use for a linear regression model are Overall Quality, Neighbohood, External Quality, above ground square feet, and size of garage in car capacity.
+The predictor variables that showed to have some effect and for which we plan to use for a linear regression model are Overall Quality, Neighbohood, External Quality, above ground square feet, and size of garage in car capacity. Most of these factors make a lot of sense as to why the sales price would be affected. Better quality, better neighborhood, and larger square feet intuitively should increase the sales price. However, the size of the garage does seem a bit suprizing considering all the other factors that were measured.  
 
 ```{r}
 mse = function(linmod) sum(linmod$residuals^2)/linmod$df.residual
