@@ -13,6 +13,7 @@ knitr::opts_chunk$set(tidy = TRUE)
 library(glmnet)
 library(randomForest)
 ```
+The main problem with missing values in this dataset, is that a missing value means something. Specifically, for instance, most of the predictors relating to basement, an NA/missing value encodes the value of a lack of basement. The same is true for predictors relating to garage. So, what we chose to do is for all the factors that have a missing value, we replace them with a None level for that factor. i.e. for basement quality, an NA means no basement, so for basement quality we replace those with a factor level of None. For the non-factor predictors, we just replaced them with 0. This method is very general, and it may be a little mis-representative of what is happening, but we felt this was an okay trade-off. This was all the cleaning that our group chose to do to the data.
 
 ```{r include = FALSE, echo = FALSE, warning = FALSE}
     loadData = function(path){
