@@ -1,0 +1,289 @@
+---
+title: "Stepwise Evaluation of Real Estate Data"
+output:
+  html_document: default
+  html_notebook: default
+---
+
+##Data Cleaning and Stepwise Evaluation
+
+###Data Cleaning`
+
+We have our intial data cleaning function.
+
+```{r}
+  setwd("~/")
+  data = read.csv("./train.csv")
+  data = data[-1]
+  
+  data$MSSubClass = as.factor(data$MSSubClass)#Factor encoded as a numeric value
+  
+  #Median or 0
+  data$LotFrontage[is.na(data$LotFrontage) == TRUE] = median(data$LotFrontage[!is.na(data$LotFrontage)])
+  #data$LotFrontage[is.na(data$LotFrontage) == TRUE] = median(data$LotFrontage[!is.na(data$LotFrontage)])
+  
+  data$Alley = factor(data$Alley, levels=c(NA, "None", "Grvl", "Pave"))
+  data$Alley[is.na(data$Alley)] = "None"
+  
+  data$MasVnrType[is.na(data$MasVnrType) == TRUE] = "None"
+  
+  data$MasVnrArea[is.na(data$MasVnrArea) == TRUE] = 0
+  
+  data$BsmtQual = factor(data$BsmtQual, levels=c("None", levels(data$BsmtQual)))
+  data$BsmtQual[is.na(data$BsmtQual)] = "None"
+  
+  data$BsmtCond = factor(data$BsmtCond, levels=c("None", levels(data$BsmtCond)))
+  data$BsmtCond[is.na(data$BsmtCond)] = "None"
+  
+  data$BsmtExposure = factor(data$BsmtExposure, levels=c("None", levels(data$BsmtExposure)))
+  data$BsmtExposure[is.na(data$BsmtExposure)] = "None"
+  
+  data$BsmtFinType1 = factor(data$BsmtFinType1, levels=c("None", levels(data$BsmtFinType1)))
+  data$BsmtFinType1[is.na(data$BsmtFinType1)] = "None"
+  
+  data$BsmtFinType2 = factor(data$BsmtFinType2, levels=c("None", levels(data$BsmtFinType2)))
+  data$BsmtFinType2[is.na(data$BsmtFinType2)] = "None"
+  
+  data$Electrical[is.na(data$Electrical) == TRUE] = "SBrkr"
+  
+  data$FireplaceQu = factor(data$FireplaceQu, levels=c("None", levels(data$FireplaceQu)))
+  data$FireplaceQu[is.na(data$FireplaceQu)] = "None"
+  
+  data$GarageType = factor(data$GarageType, levels=c("None", levels(data$GarageType)))
+  data$GarageType[is.na(data$GarageType)] = "None"
+  
+  data$GarageYrBlt[is.na(data$GarageYrBlt) == TRUE] = 0
+  
+  data$GarageFinish = factor(data$GarageFinish, levels=c("None", levels(data$GarageFinish)))
+  data$GarageFinish[is.na(data$GarageFinish)] = "None"
+  
+  data$GarageQual = factor(data$GarageQual, levels=c("None", levels(data$GarageQual)))
+  data$GarageQual[is.na(data$GarageQual)] = "None"
+  
+  data$GarageCond = factor(data$GarageCond, levels=c("None", levels(data$GarageCond)))
+  data$GarageCond[is.na(data$GarageCond)] = "None"
+  
+  data$PoolQC = factor(data$PoolQC, levels=c("None", levels(data$PoolQC)))
+  data$PoolQC[is.na(data$PoolQC)] = "None"
+  
+  data$Fence = factor(data$Fence, levels=c("None", levels(data$Fence)))
+  data$Fence[is.na(data$Fence)] = "None"
+  
+  data$MiscFeature = factor(data$MiscFeature, levels=c("None", levels(data$MiscFeature)))
+  data$MiscFeature[is.na(data$MiscFeature)] = "None"
+  
+
+
+```
+
+Some terms are added and cleaned for clarity's sake. Quality variables are broken down to a baseline of 5(average) where a positive term will indicate improvement above average, and a negative will be below average
+
+Year variables are replaced as their distance from 2000, rather than from year 0.
+
+
+```{r}
+#Changing Base 10 variables so they are representative of change from the average
+data$OverallQual= (data$OverallQual - 5)
+data$OverallCond= (data$OverallCond - 5)
+
+#Changing the base of  year variables so they are based off of distance from 2000
+data$YearBuilt= data$YearBuilt - 2000
+data$YearRemodAdd= data$YearRemodAdd - 2000
+data$GarageYrBlt= data$GarageYrBlt - 2000
+data$YrSold = data$YrSold -2000
+
+```
+
+
+We create some binary variables which will add more precision in explaining the data.
+```{r}
+data$CentralAir<-data$CentralAir == "Y"
+
+data$HasBsmt <- data$BsmtCond != "None"
+
+data$Has2ndFlr<-data$X2ndFlrSF != 0 
+
+#We want Fireplaces as a factor instead of an integer
+data$Fireplaces <- factor(data$Fireplaces)
+
+data$HasGarage <- data$GarageCond != "None"
+
+data$HasPool <- data$PoolQC != "None"
+
+data$HasFence <- data$Fence != "None"
+
+data$GarageCars<- factor(data$GarageCars)
+
+data$KitchenAbvGr <- factor(data$KitchenAbvGr)
+
+data$HasWoodDeck <- data$WoodDeckSF != 0
+data$HasOpenPorch<- data$OpenPorchSF != 0
+data$HasEnclosedPorch<- data$EnclosedPorch != 0
+data$Has3SsnPorch <- data$X3SsnPorch != 0
+
+```
+
+
+We change Sale Price to a log variable so that our coefficients can be interpreted as percentages. 
+```{r}
+
+data$SalePrice<- log(data$SalePrice)
+```
+
+
+###Stepwise Data Evaluation
+We increase the number of steps, incase it provides a more precise value
+```{r}
+x<-data[-80]
+y<-data[80]
+#Stepwise Regression
+full<-lm(y$SalePrice~ ., data = x )
+coef.back<-step(full, direction = "backward", trace = FALSE, steps=5000)
+coef.for<-step(full, direction = "forward", trace = FALSE, steps=5000)
+coef.both <- step(full, direction="both", trace = FALSE, steps=5000)
+
+```
+
+```{r}
+#turnoff scientific notation 
+options(scipen=999)
+summary(coef.back)
+length(coefficients(coef.back))
+
+```
+###The following variables have been determined significant in backwards elimination 
+
+These can be difficult to see given all the factor variables. 
+
+1.MSSubClass
+2. MSZoning
+3. Lot Frontage
+4. Lot Area
+5. Street Pave
+6. Land Contour 
+7. Utilities
+8. Lot Config
+9. Land Slope
+10. Neighborhood
+11. Condition
+12. Overall Quality
+13. Overall Condition
+14. Year Built
+15. Year Remodeled
+16. Roof Style 
+17. Roof Material
+18. Exterior Type
+19. MasVnrArea
+20. External Condition
+21. Foundation
+22. Basement Quality
+23. Basement Condition
+24. Basement Exposure
+25. Basement Finish
+26. Heating Type
+27. Central Air
+28. 1st Flr Sq Ft
+29. 2nd Flr Sq Ft
+30. Low QUality Finish
+31. Basement FUll Bath
+32. Full Bath Number
+33. Half Bath Number
+34. Kitchen Above Ground
+35. Kitchen Quality
+36. TOtal Rooms Above Ground 
+37. Functional
+38. FirePlaces
+39. Garage Yr Blt
+40. Garage Area
+41. Garage Condition
+42. Garage Quality
+43. WoodDeck SF
+44. Enclosed Porch
+45 3 Season Porch
+46. Screen Porch
+47. Pool Area
+48. Pool Quality
+49. Fence Type
+50. Sale Type
+51. Sale Condition
+52. HasOpenPorch 
+
+So backwards elimination eliminated roughly 27 variables 
+
+Has a R Square of .9425, Adjusted R Square of .9337
+Has 193 Terms (Including Factors)
+
+```{r}
+summary(coef.for)
+```
+### Unique Variables in the Set From Backwards Elimination
+1. Alley Type
+2. Lot Shape
+3. Building Type
+4. House Style
+5. 2nd Exterior Type
+6. Exterior Quality
+7. Basement FInished SF
+8. Basement FInished SF 2
+9. Basement Unfinished SF
+10. Electrical
+11. Basement Half Bath
+12. Bedroom Above Ground
+13. Fireplace Quality
+14. Garage Type
+15. Garage Finish
+16. Garage Cars
+17. Paved Drive
+18. Open Porch Sfs
+19. MIsc Feature
+20. MoSold
+21. Yr Sold
+22. Has2ndFlr
+23.HasWoodDeck
+24.HasEnclosedPorch
+25.Has3SsnPorch
+
+Has an R square of .9459, Adjusted R square .9334
+273 Terms
+
+```{r}
+#summary(coef.both)
+```
+This evaluation returned the same results as backwards selection. 
+
+So we see that forward elimination evaluation explains roughly .2% more of the variation in the data, than backwards selection, but it has roughly 80 more terms (including factors), which equates to the evaluation being roughly 40% bigger for .2% increase in accuracy. 
+
+The largest effects in the backwards elimination model are 
+1. MS Subclass 160
+2. MS Zoning (all terms)
+3. Lot Area
+4. Land Slope Severe 
+5. StoneBridge Neighborhood
+6. Normal Condition
+7. Condition2PosN
+8. Overall Quality
+9. Overall Conidtion
+10. Year Built 
+11. Year Remodeled
+12. Roof material (Huge Effect)
+13. Basement Finished SF 1 & 2
+14. Basment Unifinished SF
+15. Heating QCTA
+16. Central Air
+17. 1st Floor SF 
+18. 2nd Floor SF
+19. Significant Effect for Kitchen Quality Below Excellent
+20. Functional MAJ 2
+21. 1 Fireplace
+22. Garage Area
+23. Wood Deck SF
+24. Screen Porch
+25. Sale Condition Normal 
+
+
+It appears that all the values we selected for in the Random Forests Analysis show up in the stepwise regression, however they show up in a much smaller scale. 
+
+
+
+
+
