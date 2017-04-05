@@ -12,17 +12,25 @@ knitr::opts_chunk$set(tidy = TRUE)
 ```{r include = FALSE, echo = FALSE}
 library(glmnet)
 library(randomForest)
+library(dplyr)
 ```
 The main problem with missing values in this dataset, is that a missing value means something. Specifically, for instance, most of the predictors relating to basement, an NA/missing value encodes the value of a lack of basement. The same is true for predictors relating to garage. So, what we chose to do is for all the factors that have a missing value, we replace them with a None level for that factor. i.e. for basement quality, an NA means no basement, so for basement quality we replace those with a factor level of None. For the non-factor predictors, we just replaced them with 0. This method is very general, and it may be a little mis-representative of what is happening, but we felt this was an okay trade-off. This was all the cleaning that our group chose to do to the data.
 
 ```{r include = FALSE, echo = FALSE, warning = FALSE}
-    loadData = function(path){
-      tmpData = read.csv(path)
-      tmpData = subset(tmpData, select = -Id)
+train = read.csv("./train.csv")
+test = read.csv("./test.csv")
+test = mutate(test, SalePrice = rep(0, 1459))
+houses = bind_rows(train, test)
+
+    cleanData = function(data){
+      tmpData = subset(data, select = -Id)
       
       tmpData$MSSubClass = as.factor(tmpData$MSSubClass);#Factor encoded as a numeric value
       for(column in colnames(tmpData)){
         if(class(tmpData[[column]]) == "factor"){
+          tmpData[column] = factor(tmpData[[column]], levels=c("None", levels(tmpData[[column]])))
+          tmpData[[column]][is.na(tmpData[[column]])] = "None"
+        }else if(class(tmpData[[column]]) == "character"){
           tmpData[column] = factor(tmpData[[column]], levels=c("None", levels(tmpData[[column]])))
           tmpData[[column]][is.na(tmpData[[column]])] = "None"
         }else{
@@ -32,28 +40,24 @@ The main problem with missing values in this dataset, is that a missing value me
       return (tmpData)
     }
 
-
-train = loadData("./train.csv")
-test = loadData("./test.csv")
+houses = loadData(houses)
+train = filter(houses, SalePrice > 0)
+test = filter(houses, SalePrice == 0)
 
 # sum(is.na(train))
 # sum(is.na(test))
-    
-levels(train$MSSubClass) = c("None", "20",  "30",  "40",  "45",  "50",  "60",  "70",  "75",  "80",  "85",  "90",  "120", "150", "160", "180", "190")
+# sum(sapply(train[, 1:79], class) != sapply(test[, 1:79], class))
 ```
 
 ```{r, fig.height=6, cache=TRUE}
-
-rf1 = randomForest(x = train[, 1:79], y = train$SalePrice, importance = TRUE, data = train)
+rf1 = randomForest(x = train[, -80], y = train$SalePrice, importance = TRUE, data = train)
 
 varImpPlot(rf1)
 
-# testpredrf1 = predict(rf1, test)
-# testpredrf1 = cbind(1461:2919, testpredrf1)
-# colnames(testpredrf1) = c("Id", "SalePrice")
-# write.csv(testpredrf1, file = "testpredrf1.csv", row.names = FALSE)
-
-# sum(sapply(train[, 1:79], class) == sapply(test[, 1:79], class))
+testpredrf1 = predict(rf1, test)
+testpredrf1 = cbind(1461:2919, testpredrf1)
+colnames(testpredrf1) = c("Id", "SalePrice")
+write.csv(testpredrf1, file = "testpredrf1.csv", row.names = FALSE)
 ```
 
 The predictor variables that showed to have some effect and for which we plan to use for a linear regression model are Overall Quality, Neighbohood, External Quality, above ground square feet, and size of garage in car capacity. Most of these factors make a lot of sense as to why the sales price would be affected. Better quality, better neighborhood, and larger square feet intuitively should increase the sales price. However, the size of the garage does seem a bit suprizing considering all the other factors that were measured.  
