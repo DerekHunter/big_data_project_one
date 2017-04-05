@@ -40,7 +40,7 @@ houses = bind_rows(train, test)
       return (tmpData)
     }
 
-houses = loadData(houses)
+houses = cleanData(houses)
 train = filter(houses, SalePrice > 0)
 test = filter(houses, SalePrice == 0)
 
