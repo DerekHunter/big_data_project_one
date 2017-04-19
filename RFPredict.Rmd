@@ -1,0 +1,97 @@
+---
+title: "RFvarSelect"
+author: "Jacqui Anderson"
+date: "April 10, 2017"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+getwd()
+library(glmnet)
+library(randomForest)
+
+train = read.csv("train.csv")
+test = read.csv("test.csv")
+```
+
+
+```{r include = FALSE, echo = FALSE}
+    loadData = function(path){
+      tmpData = read.csv(path)
+      tmpData = subset(tmpData, select = -Id)
+      
+      tmpData$MSSubClass = as.factor(tmpData$MSSubClass);#Factor encoded as a numeric value
+      for(column in colnames(tmpData)){
+        if(class(tmpData[[column]]) == "factor"){
+          tmpData[column] = factor(tmpData[[column]], levels=c("None", levels(tmpData[[column]])))
+          tmpData[[column]][is.na(tmpData[[column]])] = "None"
+        }else{
+          tmpData[column][is.na(tmpData[column])] = 0;
+        }
+      }
+      return (tmpData)
+    }
+
+
+train = loadData("./train.csv")
+test = loadData("./test.csv")
+
+sum(is.na(train))
+sum(is.na(test))
+    
+levels(train$MSSubClass) = c("20",  "30",  "40",  "45",  "50",  "60",  "70",  "75",  "80",  "85",  "90",  "120", "150", "160", "180", "190")
+    
+```
+
+Uisng the random forest package we were able to select a few predictor variables with the randomForest function and the variable importance plot. 
+
+```{r}
+rf1 = randomForest(x = train[, 1:79], y = train$SalePrice, importance = TRUE, data = train)
+
+varImpPlot(rf1)
+```
+
+tuning using random forrest.
+```{r}
+
+tuneRF(x = train[, 1:79], y = train$SalePrice, stepFactor=1.15, improve= .001, ntree=500, mtryStart=26)
+
+varImpPlot(rf1)
+```
+
+dont use the package vsurf for variable selection...it takes too long. 
+```{r}
+##library(VSURF)
+##vshouse <- VSURF(x = train[, 1:79], y = train$SalePrice, data = train, ntree = 1000, mtry = 26)
+
+##summary(vshouse)
+```
+
+Variables to consider: OverallQual, Neighborhood, GrLivArea, ExterQual, GarageCars, MSSubClass, XstFrSF, TotalBsmtSf. 
+
+```{r}
+#linear regression model
+lm = lm(SalePrice ~ OverallQual + Neighborhood + GrLivArea + ExterQual + GarageCars, data = train)
+summary(lm)
+anova(lm)
+```
+
+Using the predict function and the random forest package to find a prediction model.
+
+```{r}
+rf2 = randomForest(x = train[, 1:79], y = train$SalePrice, importance = TRUE, data = train)
+
+house.pred = predict(rf2, predict.all = FALSE)
+
+rmse1 = sqrt(mean(train$SalePrice - house.pred)^2)
+rmse1
+rmse2 = mean(rf2$mse)
+rmse2
+sqrt(rmse2)
+
+```
+
