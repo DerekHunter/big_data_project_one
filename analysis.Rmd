@@ -62,10 +62,56 @@ write.csv(testpredrf1, file = "testpredrf1.csv", row.names = FALSE)
 
 The predictor variables that showed to have some effect and for which we plan to use for a linear regression model are Overall Quality, Neighbohood, External Quality, above ground square feet, and size of garage in car capacity. Most of these factors make a lot of sense as to why the sales price would be affected. Better quality, better neighborhood, and larger square feet intuitively should increase the sales price. However, the size of the garage does seem a bit suprizing considering all the other factors that were measured.  
 
+###Random Forests Tuning
+From:
+James, Gareth, et al. An introduction to statistical learning. Vol. 6. New York: springer, 2013.
+
+"When building these decision trees, each time a split in a tree is considered, a random sample of
+m predictors is chosen as split candidates from the full set of p predictors. The split is allowed to use only one of those m predictors. A fresh sample of m predictors is taken at each split, and typically we choose m ≈√p"
+
+So for tuning our Random Forests we will use the specification m= root(p) as a base and then use the tuneRF function to find the optimal number of splits. Variables with only one factor are removed to improve accuracy.  
+
+### RF2
+
+```{r}
+m_data<-floor(sqrt(ncol(train[, -80])))
+set.seed(10)
+x<- data.frame(train[,c(-80)])
+
+
+
+drops<- c("Utilities", "Condition2", "RoofMatl","HouseStyle", "Exterior1st", "Exterior2nd", "Electrical", "Heating", "GarageQual", "PoolQC", "MiscFeature")
+
+x2<-x[,!(names(x)%in% drops)]
+
+y<- train$SalePrice
+
+tuneRF(x2, y, stepFactor=1.15, improve= .001, ntree=500, mtryStart=26)
+tuneRF(x2, y, stepFactor=1.15, improve= .001, ntree=1000, mtryStart=26)
+
+```
+
+We've found that the best m for this analysis is 29 for 500 and 1000 trees. It performs roughly 2% better than the default analysis. This is probably not enough to make a large difference, but the model will be slightly more aaccurate.
+
+```{r, fig.height=6, cache=TRUE}
+set.seed(10)
+rf2 = randomForest(x = x2, y = y, importance = TRUE, mtry = 29)
+rf2
+randomForest(x2 , y)
+varImpPlot(rf2)
+
+testpredrf2 = predict(rf2, test)
+testpredrf2 = cbind(1461:2919, testpredrf2)
+colnames(testpredrf2) = c("Id", "SalePrice")
+write.csv(testpredrf2, file = "testpredrf2.csv", row.names = FALSE)
+```
+
+The tuned configuration is ultimately not making a large difference in the results . 
+
+
 ```{r}
 mse = function(linmod) sum(linmod$residuals^2)/linmod$df.residual
 ```
-
 Created a function to calculate the MSE for our linear models.
 
 ```{r include = FALSE, echo = FALSE}
